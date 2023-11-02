@@ -47,6 +47,7 @@ const CreateUser = async (req, res) => {
       data: null,
     });
   } catch (error) {
+    console.log(error);
     res.send({
       message: error.message,
       success: false,
@@ -83,7 +84,7 @@ const Login = async (req, res) => {
       { userId: existingUser._id },
       process.env.jwt_secret,
       {
-        expiresIn: "1h",
+        expiresIn: "24h",
       }
     );
     res.send({

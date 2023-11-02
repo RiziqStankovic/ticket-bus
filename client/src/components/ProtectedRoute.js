@@ -29,17 +29,17 @@ function ProtectedRoute({ children }) {
       if (response.data.success) {
         dispatch(SetUser(response.data.data));
       } else {
-        localStorage.removeItem("user_id");
-        localStorage.removeItem("token");
+        // localStorage.removeItem("user_id");
+        // localStorage.removeItem("token");
         message.error(response.data.message);
-        navigate("/login");
+        navigate("/admin/buses");
       }
     } catch (error) {
-      localStorage.removeItem("user_id");
-      localStorage.removeItem("token");
+      // localStorage.removeItem("user_id");
+      // localStorage.removeItem("token");
       message.error(error.message);
       dispatch(HideLoading());
-      navigate("/login");
+      navigate("/admin/buses");
     }
   }, [dispatch, navigate, user_id]);
 
@@ -47,7 +47,7 @@ function ProtectedRoute({ children }) {
     if (localStorage.getItem("token")) {
       validateToken();
     } else {
-      navigate("/login");
+      navigate("/admin/buses");
     }
   }, [navigate, validateToken]);
 

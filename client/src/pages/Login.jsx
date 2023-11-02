@@ -13,6 +13,7 @@ function Login() {
     try {
       dispatch(ShowLoading());
       const response = await axios.post("/api/auth/login", values);
+      console.log(response) 
       dispatch(HideLoading());
       if (response.data.success) {
         message.success(response.data.message);
@@ -21,7 +22,7 @@ function Login() {
 
         const idTrip = localStorage.getItem("idTrip");
 
-        if (response.data.user.isAdmin === true) {
+        if (response.data.user.isAdmin === false) {
           navigate("/admin/buses");
         } else if (idTrip == null) {
           navigate("/bookings");

@@ -2,6 +2,7 @@ const Bus = require("../models/busModel");
 
 // Add a new bus
 const AddBus = async (req, res) => {
+  console.log(AddBus)
   try {
     const existingBus = await Bus.findOne({ busNumber: req.body.busNumber });
     existingBus
@@ -19,6 +20,7 @@ const AddBus = async (req, res) => {
 
 // get all buses and if the journeyDate is passed 1 hour ago , make the status of the bus to "Completed"
 const GetAllBuses = async (req, res) => {
+  console.log(GetAllBuses);
   try {
     const buses = await Bus.find();
     buses.forEach(async (bus) => {
@@ -33,7 +35,9 @@ const GetAllBuses = async (req, res) => {
       if (departure.getTime() - new Date().getTime() < 3600000) {
         await Bus.findByIdAndUpdate(bus._id, { status: "Completed" });
       }
-      // console.log("departure time is : ", departure);
+      console.log("departure time is : ", departure);
+      console.log("departure time is : ", buses);
+
     });
 
     const orderedBuses = buses.sort((a, b) => {
