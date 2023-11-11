@@ -47,7 +47,7 @@ function Index() {
   return (
     <>
       <Helmet>
-        <title>Easy-Booking</title>
+        <title>Ticket Bus</title>
       </Helmet>
       <div className="h-screen flex bg-gray-900">
         <div
@@ -79,14 +79,14 @@ function Index() {
           <div className="max-w-md ">
             <div className="flex justify-center">
               <img
-                className=" text-center w-20 h-20 rounded-full"
+                className=" text-center w-30 h-40 rounded-full"
                 src={logo}
                 alt="logo"
               />
             </div>
 
             <h1 className="mb-5 text-5xl text-white font-bold ">
-              Easy-Booking
+              Ticket - Bus
             </h1>
             <p className="mb-5 text-xl text-white">
               is a platform that allows you to book your bus tickets online and
@@ -101,15 +101,16 @@ function Index() {
               <span className="w-32 h-32 rotate-45 translate-x-12 -translate-y-2 absolute left-0 top-0 bg-white opacity-[3%]"></span>
               <span className="absolute top-0 left-0 w-48 h-48 -mt-1 transition-all duration-500 ease-in-out rotate-45 -translate-x-56 -translate-y-24 bg-blue-600 opacity-100 group-hover:translate-x-1"></span>
               <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">
-                Check your tickets
+                Login
               </span>
               <span className="absolute inset-0 border-2 border-blue-600 rounded-full"></span>
             </Link>
             <div className="w-full my-5 mx-2 p-2 px-2 py-3 flex justify-center">
-              <Row gutter={10} align="center">
+              <Row gutter={10} align="center" >
                 <Col lg={12} sm={24}>
                   <select
                     className="mb-5 select select-primary w-full max-w-xs"
+                    style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
                     onChange={(e) => {
                       setFilters({ ...filters, from: e.target.value });
                     }}
@@ -127,6 +128,7 @@ function Index() {
                 <Col lg={12} sm={24}>
                   <select
                     className="mb-5 select select-primary w-full max-w-xs"
+                    style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
                     onChange={(e) => {
                       setFilters({ ...filters, to: e.target.value });
                     }}
@@ -141,12 +143,13 @@ function Index() {
                     })}
                   </select>
                 </Col>
-                <Col lg={24} sm={24}>
+                <Col lg={24} sm={24} >
                   <input
                     className="mb-5 input input-bordered input-primary w-full max-w-xs"
                     min={new Date().toISOString().split("T")[0]}
                     type="date"
                     placeholder="Date"
+                    style={{ backgroundColor: '#000000', color: '#FFFFFF' }}
                     onChange={(e) => {
                       setFilters({
                         ...filters,

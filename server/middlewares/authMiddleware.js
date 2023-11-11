@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
     // Memeriksa apakah token ada
     if (!token) {
       return res.status(401).send({
-        message: "Auth failed 1",
+        message: "Try Login again ",
         success: false,
       });
     }
@@ -22,7 +22,7 @@ module.exports = (req, res, next) => {
   } catch (error) {
     // Menangani kesalahan autentikasi
     res.status(401).send({
-      message: "Auth failed 2",
+      message: "You must Login to Continue",
       success: false,
     });
   }

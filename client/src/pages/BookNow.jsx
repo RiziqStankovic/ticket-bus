@@ -5,7 +5,7 @@ import { HideLoading, ShowLoading } from "../redux/alertsSlice";
 import { Row, Col, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import SeatSelection from "../components/SeatSelection";
-import StripeCheckout from "react-stripe-checkout";
+// import StripeCheckout from "react-stripe-checkout";
 import { Helmet } from "react-helmet";
 import moment from "moment";
 
@@ -32,7 +32,7 @@ function BookNow() {
     }
   }, [dispatch, params.id]);
 
-  const bookNow = async (transactionId) => {
+  const bookNow = async () => {
     try {
       dispatch(ShowLoading());
       const response = await axiosInstance.post(
@@ -40,34 +40,12 @@ function BookNow() {
         {
           bus: bus._id,
           seats: selectedSeats,
-          transactionId,
         }
       );
       dispatch(HideLoading());
       if (response.data.success) {
         message.success(response.data.message);
         navigate("/bookings");
-      } else {
-        message.error(response.data.message);
-      }
-    } catch (error) {
-      dispatch(HideLoading());
-      message.error(error.message);
-    }
-  };
-
-  const onToken = async (token) => {
-    try {
-      dispatch(ShowLoading());
-      const response = await axiosInstance.post("/api/bookings/make-payment", {
-        token,
-        amount: selectedSeats.length * bus.price,
-      });
-
-      dispatch(HideLoading());
-      if (response.data.success) {
-        message.success(response.data.message);
-        bookNow(response.data.data.transactionId);
       } else {
         message.error(response.data.message);
       }
@@ -104,8 +82,8 @@ function BookNow() {
                 </h1>
 
                 <h1 className="text-lg">
-                  <b className="text-blue-600 italic">Price :</b> DH {bus.price}{" "}
-                  /-
+                  <b className="text-blue-600 italic">Price :</b> Rp {bus.price}{" "}
+                  
                 </h1>
                 <h1 className="text-lg">
                   <b className="text-blue-600 italic">Departure Time</b> :{" "}
@@ -136,28 +114,29 @@ function BookNow() {
                   {selectedSeats.join(", ")}
                 </h1>
                 <h1 className="text-xl mt-2 mb-3">
-                  <b className="text-blue-600 italic"> Price :</b> DH{" "}
+                  <b className="text-blue-600 italic"> Price :</b> Rp{" "}
                   {bus.price * selectedSeats.length}
                 </h1>
 
-                <StripeCheckout
+                {/* <StripeCheckout
                   billingAddress
                   disabled={selectedSeats.length === 0}
-                  token={onToken}
+                  // token={onToken}
                   amount={bus.price * selectedSeats.length * 100}
-                  currency="MAD"
-                  stripeKey="pk_test_ZT7RmqCIjI0PqcpDF9jzOqAS"
-                >
+                  currency="mgp"
+                  stripeKey="sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+                > */}
                   <button
+                    onClick={() => bookNow()}
                     className={`${
                       selectedSeats.length === 0
                         ? "animate-none cursor-not-allowed btn btn-primary py-2 px-5 rounded-full btn-disabled text-white"
                         : "animate-bounce btn btn-primary py-2 px-5 rounded-full bg-blue-600 hover:bg-blue-800 hover:duration-300 text-white"
                     }`}
                   >
-                    Pay Now
+                    Book Now
                   </button>
-                </StripeCheckout>
+                {/* </StripeCheckout> */}
               </div>
             </Col>
             <Col lg={12} xs={24} sm={24}>

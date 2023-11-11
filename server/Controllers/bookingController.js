@@ -41,7 +41,7 @@ const BookSeat = async (req, res) => {
       Departure Time: ${moment(bus.departure, "HH:mm:ss").format("hh:mm A")}
       Arrival Time: ${moment(bus.arrival, "HH:mm:ss").format("hh:mm A")}
       Journey Date: ${bus.journeyDate}
-      Total Price: ${bus.price * req.body.seats.length} MAD
+      Total Price: ${bus.price * req.body.seats.length} Rupiah
       Thank you for choosing us! 
       `,
     };
@@ -148,7 +148,7 @@ const PayWithStripe = async (req, res) => {
     const payment = await stripe.charges.create(
       {
         amount: amount * 100,
-        currency: "MAD",
+        currency: "gbp",
         customer: customer.id,
         receipt_email: token.email,
       },

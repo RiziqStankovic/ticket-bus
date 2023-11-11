@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
-const AdminBookings = lazy(() => import("./pages/ "));
+const AdminBookings = lazy(() => import("./pages/Admin/AdminBookings"));
 const AdminBuses = lazy(() => import("./pages/Admin/AdminBuses"));
 const AdminUsers = lazy(() => import("./pages/Admin/AdminUsers"));
 const Home = lazy(() => import("./pages/Home"));
@@ -102,10 +102,10 @@ function App() {
             />
 
             <Route
-              path=""
+              path="/admin/bookings"
               element={
                 <ProtectedRoute>
-                  <AdminBookings />/admin/bookings
+                  <AdminBookings />
                 </ProtectedRoute>
               }
             />

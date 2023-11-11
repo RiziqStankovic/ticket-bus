@@ -240,7 +240,7 @@ function Bookings() {
                             <div className="font-semibold">
                               {selectedBooking?.price *
                                 selectedBooking?.seats.length}{" "}
-                              Dh
+                              Rupiah
                             </div>
                           </div>
                           <div className="flex flex-col mx-auto">

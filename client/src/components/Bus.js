@@ -60,7 +60,7 @@ function Bus({ bus }) {
 
             <div className="text-sm mx-2 flex flex-col">
               <p className="font-bold text-base">Price</p>
-              <p className="font-base">{bus.price} DH</p>
+              <p className="font-base">{bus.price} Rp </p>
             </div>
           </div>
           <div className="md:border-l-2 mx-6 md:border-dotted flex flex-row py-4 mr-6 flex-wrap">

@@ -46,9 +46,9 @@ function AdminBookings() {
     {
       title: "Full Name",
       dataIndex: "user",
-      render: (user) => `${user.name}`,
+      render: (user) => (user ? user.name : "N/A"),
+      // key: "user",
     },
-
     {
       title: "Bus Number",
       dataIndex: "busNumber",
