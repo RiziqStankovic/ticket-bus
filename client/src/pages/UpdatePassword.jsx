@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, message } from "antd";
-import axios from "axios";
+import { axiosInstance } from "../helpers/axiosInstance";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ShowLoading, HideLoading } from "../redux/alertsSlice";
@@ -20,8 +20,8 @@ function UpdatePassword() {
 
     try {
       dispatch(ShowLoading());
-      const response = await axios.post(
-        `/api/auth/ResetPassword/${userId}/${resetString}`,
+      const response = await axiosInstance.post(
+        `/api/auth/resetPassword/${userId}/${resetString}`,
         values
       );
       if (response.status === 200) {

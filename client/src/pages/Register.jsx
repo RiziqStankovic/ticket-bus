@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Form, message } from "antd";
-import axios from "axios";
+import { axiosInstance } from "../helpers/axiosInstance";
 import { useDispatch } from "react-redux";
 import { ShowLoading, HideLoading } from "../redux/alertsSlice";
 import { Helmet } from "react-helmet";
@@ -18,7 +18,7 @@ function Register() {
 
     try {
       dispatch(ShowLoading());
-      const response = await axios.post("/api/auth/create-user", values);
+      const response = await axiosInstance.post("/api/auth/create-user", values);
       dispatch(HideLoading());
       if (response.data.success) {
         message.success(response.data.message);

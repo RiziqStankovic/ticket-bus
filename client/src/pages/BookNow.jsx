@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import axios from "axios";
 import { axiosInstance } from "../helpers/axiosInstance";
 import { HideLoading, ShowLoading } from "../redux/alertsSlice";
 import { Row, Col, message } from "antd";
@@ -20,8 +19,7 @@ function BookNow() {
   const getBus = useCallback(async () => {
     try {
       dispatch(ShowLoading());
-      const api = localStorage.getItem("token") ? axiosInstance : axios;
-      const response = await api.get(`/api/buses/detail/${params.id}`);
+      const response = await axiosInstance.get(`/api/buses/detail/${params.id}`);
       dispatch(HideLoading());
       if (response.data.success) {
         setBus(response.data.data);

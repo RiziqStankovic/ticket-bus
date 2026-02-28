@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, message } from "antd";
-import axios from "axios";
+import { axiosInstance } from "../helpers/axiosInstance";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ShowLoading, HideLoading } from "../redux/alertsSlice";
@@ -12,7 +12,7 @@ function Login() {
   const onFinish = async (values) => {
     try {
       dispatch(ShowLoading());
-      const response = await axios.post("/api/auth/login", values);
+      const response = await axiosInstance.post("/api/auth/login", values);
       console.log(response) 
       dispatch(HideLoading());
       if (response.data.success) {

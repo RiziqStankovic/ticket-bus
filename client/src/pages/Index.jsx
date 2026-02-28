@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet";
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import axios from "axios";
+import { axiosInstance } from "../helpers/axiosInstance";
 import { HideLoading, ShowLoading } from "../redux/alertsSlice";
 import Bus from "../components/Bus";
 import { message } from "antd";
@@ -21,12 +21,12 @@ function Index() {
       try {
         let data;
         if (from && to && journeyDate) {
-          const res = await axios.post(
+          const res = await axiosInstance.post(
             `/api/buses/get?from=${from}&to=${to}&journeyDate=${journeyDate}`
           );
           data = res.data.data;
         } else {
-          const res = await axios.get("/api/buses/home");
+          const res = await axiosInstance.get("/api/buses/home");
           data = res.data.data;
         }
         setBuses(data || []);
@@ -51,7 +51,7 @@ function Index() {
   }, [filters, fetchBuses]);
 
   useEffect(() => {
-    axios.get("/api/cities/get-all-cities").then((res) => {
+    axiosInstance.get("/api/cities/get-all-cities").then((res) => {
       setCities(res.data.data || []);
     });
   }, []);

@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect } from "react";
-import axios from "axios";
+import React, { useCallback, useEffect, useRef } from "react";
+import { axiosInstance } from "../helpers/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { message } from "antd";
 import { SetUser } from "../redux/usersSlice";
@@ -12,26 +12,28 @@ function ProtectedRoute({ children }) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.users);
   const navigate = useNavigate();
+  const redirectingRef = useRef(false);
+
   const validateToken = useCallback(async () => {
+    if (redirectingRef.current) return;
     try {
       dispatch(ShowLoading());
 
-      const response = await axios.get(`/api/users/${user_id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axiosInstance.get(`/api/users/${user_id}`);
       dispatch(HideLoading());
       if (response.data.success) {
         dispatch(SetUser(response.data.data));
       } else {
-        // User not found (misal: ID lama dari MongoDB setelah migrasi ke PostgreSQL)
+        redirectingRef.current = true;
         localStorage.clear();
         dispatch(SetUser(null));
         message.warning("Sesi kedaluwarsa. Silakan login kembali.");
-        navigate("/login");
+        navigate("/");
       }
     } catch (error) {
+      if (redirectingRef.current) return;
+      redirectingRef.current = true;
+
       const isUserNotFound =
         error.response?.data?.message === "User not found" ||
         error.response?.status === 404;
@@ -39,20 +41,24 @@ function ProtectedRoute({ children }) {
         localStorage.clear();
         dispatch(SetUser(null));
         message.warning("Sesi kedaluwarsa. Silakan login kembali.");
-        navigate("/login");
+        navigate("/");
       } else {
+        localStorage.clear();
+        dispatch(SetUser(null));
         message.error(error.response?.data?.message || error.message);
-        navigate("/login");
+        navigate("/");
       }
       dispatch(HideLoading());
     }
   }, [dispatch, navigate, user_id]);
 
   useEffect(() => {
+    if (redirectingRef.current) return;
     if (localStorage.getItem("token") && user_id) {
       validateToken();
     } else {
-      navigate("/login");
+      if (localStorage.getItem("token")) localStorage.clear();
+      navigate("/");
     }
   }, [navigate, validateToken, user_id]);
 

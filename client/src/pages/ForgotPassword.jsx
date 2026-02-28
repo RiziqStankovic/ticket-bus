@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, message } from "antd";
-import axios from "axios";
+import { axiosInstance } from "../helpers/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ShowLoading, HideLoading } from "../redux/alertsSlice";
@@ -12,7 +12,7 @@ function ForgotPassword() {
   const onFinish = async (values) => {
     try {
       dispatch(ShowLoading());
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         "/api/auth/requestPasswordReset",
         values
       );

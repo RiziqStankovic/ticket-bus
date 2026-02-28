@@ -1,6 +1,8 @@
 import axios from "axios";
 
-const baseURL = process.env.REACT_APP_API_URL || "";
+// API URL dari env - kosongkan untuk dev (proxy ke localhost:5000)
+const apiUrl = process.env.REACT_APP_API_URL || "";
+const baseURL = apiUrl.replace(/\/$/, "");
 
 export const axiosInstance = axios.create({
   baseURL,
