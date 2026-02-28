@@ -29,8 +29,11 @@ function Bookings() {
           return {
             ...booking,
             ...booking.bus,
-            key: booking._id,
-            user: booking.user.name,
+            key: booking.id,
+            bookingId: booking.id,
+            busId: booking.bus?.id ?? booking.busId,
+            userId: booking.user?.id ?? booking.userId,
+            user: typeof booking.user === "object" ? booking.user?.name : booking.user,
           };
         });
         setBookings(mappedData);
@@ -43,17 +46,12 @@ function Bookings() {
     }
   }, [dispatch]);
 
-  const CancelBooking = async () => {
+  const CancelBooking = async (record) => {
+    if (!record) return;
     try {
       dispatch(ShowLoading());
-      const res = await axiosInstance.get(
-        `/api/bookings/${localStorage.getItem("user_id")}`
-      );
-      const bus_id = res.data.data[0].bus._id;
-      const user_id = res.data.data[0].user._id;
-      const booking_id = res.data.data[0]._id;
       const response = await axiosInstance.delete(
-        `/api/bookings/${booking_id}/${user_id}/${bus_id}`,
+        `/api/bookings/${record.bookingId}/${record.userId}/${record.busId}`,
         {}
       );
       dispatch(HideLoading());
@@ -117,9 +115,7 @@ function Bookings() {
           </button>
           <button
             className="underline text-base text-red-500 cursor-pointer hover:text-red-700"
-            onClick={() => {
-              CancelBooking();
-            }}
+            onClick={() => CancelBooking(record)}
           >
             Cancel
           </button>

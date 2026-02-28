@@ -1,35 +1,84 @@
-# MERN Stack Bus Ticket Booking App
+# Ticket Bus
 
-### This website will include the following features :
+Aplikasi pemesanan tiket bus online dengan Node.js, React, dan PostgreSQL.
 
-- Separate User Interfaces for Users, Admins.
-- Search available bookings before being authenticated.
-- JWT Authentication and Password Hashing.
-- Seats Availability Checking.
-- Stripe Payment Gateway Integration.
-- Handling negative payment scenarios.
-- Manage Tickets and User from the Admin Panel.
+## Persyaratan
 
-### The tools and technologies used :
+- Node.js 18+
+- PostgreSQL 14+
+- npm atau yarn
 
-- MongoDB
-- Express
-- React
-- Node
-- Tailwind
-- Redux
-- Antd
-- Stripe
+## Setup
 
-## Available Scripts
+### 1. Database PostgreSQL
 
-### `cd client`
-### `npm install`
-### `npm start`
+Pastikan PostgreSQL sudah terinstall dan berjalan. Buat database baru:
 
-### `cd server`
-### `npm install`
-### `npm start`
+```sql
+CREATE DATABASE ticket_bus;
+```
 
-# API documentation link :
-### https://documenter.getpostman.com/view/19939427/2s847LMr5Q
+### 2. Environment Variables
+
+Salin file `.env.example` ke `.env` di folder `server/`:
+
+```bash
+cd server
+cp .env.example .env
+```
+
+Edit `.env` dan sesuaikan nilai:
+
+- `DATABASE_URL` - URL koneksi PostgreSQL (format: `postgresql://USER:PASSWORD@localhost:5432/ticket_bus`)
+- `jwt_secret` - Secret key untuk JWT
+- `EMAIL` & `PASSWORD` - Kredensial Gmail untuk kirim email (gunakan App Password)
+
+### 3. Migrasi Database
+
+```bash
+cd server
+npx prisma migrate deploy
+# atau untuk development:
+npx prisma migrate dev --name init
+```
+
+### 4. Install Dependencies & Jalankan
+
+**Backend:**
+```bash
+cd server
+npm install
+npm start
+```
+
+**Frontend:**
+```bash
+cd client
+npm install
+npm start
+```
+
+- Backend: http://localhost:5000
+- Frontend: http://localhost:3000
+
+## Struktur Project
+
+```
+ticket-bus/
+├── client/          # React frontend
+├── server/          # Express backend
+│   ├── prisma/      # Schema & migrasi database
+│   ├── Controllers/
+│   ├── routes/
+│   └── config/
+└── README.md
+```
+
+## Fitur
+
+- Pencarian bus berdasarkan rute dan tanggal
+- Pemesanan kursi
+- Manajemen bus (admin)
+- Manajemen user (admin)
+- Reset password via email
+- Konfirmasi booking via email

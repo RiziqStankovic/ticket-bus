@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
+import axios from "axios";
 import { axiosInstance } from "../helpers/axiosInstance";
 import { HideLoading, ShowLoading } from "../redux/alertsSlice";
 import { Row, Col, message } from "antd";
@@ -19,7 +20,8 @@ function BookNow() {
   const getBus = useCallback(async () => {
     try {
       dispatch(ShowLoading());
-      const response = await axiosInstance.get(`/api/buses/${params.id}`);
+      const api = localStorage.getItem("token") ? axiosInstance : axios;
+      const response = await api.get(`/api/buses/detail/${params.id}`);
       dispatch(HideLoading());
       if (response.data.success) {
         setBus(response.data.data);
@@ -33,12 +35,17 @@ function BookNow() {
   }, [dispatch, params.id]);
 
   const bookNow = async () => {
+    if (!localStorage.getItem("user_id")) {
+      message.warning("Silakan login terlebih dahulu untuk memesan tiket");
+      navigate("/login");
+      return;
+    }
     try {
       dispatch(ShowLoading());
       const response = await axiosInstance.post(
         `/api/bookings/book-seat/${localStorage.getItem("user_id")}`,
         {
-          bus: bus._id,
+          bus: bus.id,
           seats: selectedSeats,
         }
       );
@@ -65,7 +72,7 @@ function BookNow() {
       </Helmet>
       <div>
         {bus && (
-          <Row className="m-3 p-5" gutter={[30, 30]}>
+          <Row className="m-2 sm:m-4 p-4 sm:p-6" gutter={[16, 24]}>
             <Col lg={12} xs={24} sm={24}>
               <h1 className="font-extrabold text-2xl text-blue-500">
                 {bus.name}
@@ -103,7 +110,7 @@ function BookNow() {
                 </h1>
                 <h1 className="text-lg font-bold">
                   <span className="text-blue-600 italic">Seats Left : </span>{" "}
-                  <p>{bus.capacity - bus.seatsBooked.length}</p>
+                  <p>{bus.capacity - (Array.isArray(bus.seatsBooked) ? bus.seatsBooked : []).length}</p>
                 </h1>
               </div>
               <hr className="border-black" />

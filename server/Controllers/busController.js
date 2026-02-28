@@ -1,14 +1,36 @@
-const Bus = require("../models/busModel");
+const { prisma } = require("../config/dbConfig");
 
-// Add a new bus
+const parseSeatsBooked = (val) => {
+  if (Array.isArray(val)) return val;
+  if (typeof val === "string") {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+};
+
 const AddBus = async (req, res) => {
-  console.log(AddBus)
   try {
-    const existingBus = await Bus.findOne({ busNumber: req.body.busNumber });
-    existingBus
-      ? res.send({ message: "Bus already exists", success: false, data: null })
-      : await new Bus(req.body).save();
-
+    const existingBus = await prisma.bus.findFirst({
+      where: { busNumber: req.body.busNumber },
+    });
+    if (existingBus) {
+      return res.send({
+        message: "Bus already exists",
+        success: false,
+        data: null,
+      });
+    }
+    await prisma.bus.create({
+      data: {
+        ...req.body,
+        seatsBooked: req.body.seatsBooked || [],
+      },
+    });
     res.status(200).send({
       message: "Bus created successfully",
       success: true,
@@ -18,42 +40,39 @@ const AddBus = async (req, res) => {
   }
 };
 
-// get all buses and if the journeyDate is passed 1 hour ago , make the status of the bus to "Completed"
 const GetAllBuses = async (req, res) => {
-  console.log(GetAllBuses);
   try {
-    const buses = await Bus.find();
-    buses.forEach(async (bus) => {
+    let buses = await prisma.bus.findMany();
+
+    for (const bus of buses) {
       const journey = new Date(bus.journeyDate);
-
       const departure = new Date(
-        `${journey.getFullYear()}-${
-          journey.getMonth() + 1
-        }-${journey.getDate()} ${bus.departure}`
+        `${journey.getFullYear()}-${journey.getMonth() + 1}-${journey.getDate()} ${bus.departure}`
       );
-
       if (departure.getTime() - new Date().getTime() < 3600000) {
-        await Bus.findByIdAndUpdate(bus._id, { status: "Completed" });
+        await prisma.bus.update({
+          where: { id: bus.id },
+          data: { status: "Completed" },
+        });
+        bus.status = "Completed";
       }
-      console.log("departure time is : ", departure);
-      console.log("departure time is : ", buses);
-
-    });
+    }
 
     const orderedBuses = buses.sort((a, b) => {
-      if (a.status === "Completed" && b.status !== "Completed") {
-        return 1;
-      } else if (a.status !== "Completed" && b.status === "Completed") {
-        return -1;
-      } else {
-        return new Date(a.journeyDate) - new Date(b.journeyDate);
-      }
+      if (a.status === "Completed" && b.status !== "Completed") return 1;
+      if (a.status !== "Completed" && b.status === "Completed") return -1;
+      return new Date(a.journeyDate) - new Date(b.journeyDate);
     });
+
+    const result = orderedBuses.map((b) => ({
+      ...b,
+      seatsBooked: parseSeatsBooked(b.seatsBooked),
+    }));
 
     res.status(200).send({
       message: "Buses fetched successfully",
       success: true,
-      data: orderedBuses,
+      data: result,
     });
   } catch (error) {
     res.status(500).send({
@@ -64,31 +83,60 @@ const GetAllBuses = async (req, res) => {
   }
 };
 
-// get all buses by from and to
+const GetBusesForHomepage = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    let buses = await prisma.bus.findMany({
+      where: {
+        journeyDate: { gte: today },
+        status: { not: "Completed" },
+      },
+      orderBy: [{ journeyDate: "asc" }, { departure: "asc" }],
+      take: 12,
+    });
+    const result = buses.map((b) => ({
+      ...b,
+      seatsBooked: parseSeatsBooked(b.seatsBooked),
+    }));
+    res.status(200).send({
+      message: "Buses fetched successfully",
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "No Buses Found",
+      success: false,
+      data: error,
+    });
+  }
+};
+
 const GetBusesByFromAndTo = async (req, res) => {
   try {
-    const buses = await Bus.find({
-      from: req.query.from,
-      to: req.query.to,
-      journeyDate: req.query.journeyDate,
+    const { from, to, journeyDate } = req.query;
+    let buses = await prisma.bus.findMany({
+      where: { from, to, journeyDate },
     });
 
-    buses.forEach(async (bus) => {
+    for (const bus of buses) {
       const journey = new Date(bus.journeyDate);
       const departure = new Date(
-        `${journey.getFullYear()}-${
-          journey.getMonth() + 1
-        }-${journey.getDate()} ${bus.departure}`
+        `${journey.getFullYear()}-${journey.getMonth() + 1}-${journey.getDate()} ${bus.departure}`
       );
-
       if (departure.getTime() - new Date().getTime() < 3600000) {
-        await Bus.findByIdAndUpdate(bus._id, { status: "Completed" });
+        await prisma.bus.update({
+          where: { id: bus.id },
+          data: { status: "Completed" },
+        });
+        bus.status = "Completed";
       }
-    });
+    }
 
-    const filteredBuses = buses.filter(
-      (bus) => bus.status !== "Completed" && bus.status !== "Running"
-    );
+    const filteredBuses = buses
+      .filter((bus) => bus.status !== "Completed" && bus.status !== "Running")
+      .map((b) => ({ ...b, seatsBooked: parseSeatsBooked(b.seatsBooked) }));
+
     res.status(200).send({
       message: "Buses fetched successfully",
       success: true,
@@ -103,36 +151,38 @@ const GetBusesByFromAndTo = async (req, res) => {
   }
 };
 
-// update a bus
 const UpdateBus = async (req, res) => {
-  // if the bus is completed , you can't update it
-  const bus = await Bus.findById(req.params.id);
+  const bus = await prisma.bus.findUnique({ where: { id: req.params.id } });
+  if (!bus) {
+    return res.status(404).send({ message: "Bus not found", success: false });
+  }
   if (bus.status === "Completed") {
-    res.status(400).send({
+    return res.status(400).send({
       message: "You can't update a completed bus",
       success: false,
     });
-  } else {
-    try {
-      await Bus.findByIdAndUpdate(req.params.id, req.body);
-      res.status(200).send({
-        message: "Bus updated successfully",
-        success: true,
-      });
-    } catch (error) {
-      res.status(500).send({
-        message: "Bus not found",
-        success: false,
-        data: error,
-      });
-    }
+  }
+  try {
+    await prisma.bus.update({
+      where: { id: req.params.id },
+      data: req.body,
+    });
+    res.status(200).send({
+      message: "Bus updated successfully",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Bus not found",
+      success: false,
+      data: error,
+    });
   }
 };
 
-// delete a bus
 const DeleteBus = async (req, res) => {
   try {
-    await Bus.findByIdAndDelete(req.params.id);
+    await prisma.bus.delete({ where: { id: req.params.id } });
     res.status(200).send({
       message: "Bus deleted successfully",
       success: true,
@@ -142,14 +192,20 @@ const DeleteBus = async (req, res) => {
   }
 };
 
-// get bus by id
 const GetBusById = async (req, res) => {
   try {
-    const bus = await Bus.findById(req.params.id);
+    const bus = await prisma.bus.findUnique({ where: { id: req.params.id } });
+    if (!bus) {
+      return res.status(404).send({ success: false, message: "Bus not found" });
+    }
+    const result = {
+      ...bus,
+      seatsBooked: parseSeatsBooked(bus.seatsBooked),
+    };
     res.status(200).send({
       message: "Bus fetched successfully",
       success: true,
-      data: bus,
+      data: result,
     });
   } catch (error) {
     res.status(500).send({ success: false, message: error.message });
@@ -159,6 +215,7 @@ const GetBusById = async (req, res) => {
 module.exports = {
   AddBus,
   GetAllBuses,
+  GetBusesForHomepage,
   UpdateBus,
   DeleteBus,
   GetBusById,

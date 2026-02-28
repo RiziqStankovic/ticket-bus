@@ -16,40 +16,45 @@ function ProtectedRoute({ children }) {
     try {
       dispatch(ShowLoading());
 
-      const response = await axios.get(
-        `/api/users/${user_id} `,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await axios.get(`/api/users/${user_id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       dispatch(HideLoading());
       if (response.data.success) {
         dispatch(SetUser(response.data.data));
       } else {
-        // localStorage.removeItem("user_id");
-        // localStorage.removeItem("token");
-        message.error(response.data.message);
-        navigate("/admin/buses");
+        // User not found (misal: ID lama dari MongoDB setelah migrasi ke PostgreSQL)
+        localStorage.clear();
+        dispatch(SetUser(null));
+        message.warning("Sesi kedaluwarsa. Silakan login kembali.");
+        navigate("/login");
       }
     } catch (error) {
-      // localStorage.removeItem("user_id");
-      // localStorage.removeItem("token");
-      message.error(error.message);
+      const isUserNotFound =
+        error.response?.data?.message === "User not found" ||
+        error.response?.status === 404;
+      if (isUserNotFound) {
+        localStorage.clear();
+        dispatch(SetUser(null));
+        message.warning("Sesi kedaluwarsa. Silakan login kembali.");
+        navigate("/login");
+      } else {
+        message.error(error.response?.data?.message || error.message);
+        navigate("/login");
+      }
       dispatch(HideLoading());
-      navigate("/admin/buses");
     }
   }, [dispatch, navigate, user_id]);
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
+    if (localStorage.getItem("token") && user_id) {
       validateToken();
     } else {
-      navigate("/admin/buses");
+      navigate("/login");
     }
-  }, [navigate, validateToken]);
+  }, [navigate, validateToken, user_id]);
 
   return <div>{user && <DefaultLayout>{children}</DefaultLayout>}</div>;
 }

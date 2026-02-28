@@ -18,7 +18,7 @@ function Login() {
       if (response.data.success) {
         message.success(response.data.message);
         localStorage.setItem("token", response.data.data);
-        localStorage.setItem("user_id", response.data.user._id);
+        localStorage.setItem("user_id", response.data.user.id);
 
         const idTrip = localStorage.getItem("idTrip");
 

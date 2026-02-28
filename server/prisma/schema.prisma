@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  isAdmin   Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings       Booking[]
+  passwordResets PasswordReset[]
+}
+
+model Bus {
+  id          String @id @default(uuid())
+  name        String
+  busNumber   Int
+  from        String
+  to          String
+  departure   String
+  arrival     String
+  journeyDate String
+  capacity    Int
+  price       Int
+  seatsBooked Json   @default("[]")
+  status      String @default("Yet to start")
+
+  bookings Booking[]
+}
+
+model Booking {
+  id            String   @id @default(uuid())
+  busId         String
+  userId        String
+  seats         Json
+  transactionId String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bus  Bus  @relation(fields: [busId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([busId])
+  @@index([userId])
+}
+
+model PasswordReset {
+  id          String   @id @default(uuid())
+  userId      String
+  resetString String
+  createdAt   DateTime
+  expiresAt   DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

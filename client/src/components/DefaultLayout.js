@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/img/logo.png";
@@ -6,135 +6,140 @@ import logo from "../assets/img/logo.png";
 function DefaultLayout({ children }) {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useSelector((state) => state.users);
 
   const userMenu = [
-    {
-      name: "Home",
-      path: "/easy-booking",
-      icon: "ri-home-line",
-    },
-    {
-      name: "Bookings",
-      path: "/bookings",
-      icon: "ri-file-list-line",
-    },
-    {
-      name: "Logout",
-      path: "/logout",
-      icon: "ri-logout-box-line",
-    },
+    { name: "Home", path: "/easy-booking", icon: "ri-home-line" },
+    { name: "Bookings", path: "/bookings", icon: "ri-file-list-line" },
+    { name: "Logout", path: "/logout", icon: "ri-logout-box-line" },
   ];
   const adminMenu = [
-    {
-      name: "Home",
-      path: "/easy-booking",
-      icon: "ri-home-line",
-    },
-    {
-      name: "Buses",
-      path: "/admin/buses",
-      icon: "ri-bus-line",
-    },
-    {
-      name: "Users",
-      path: "/admin/users",
-      icon: "ri-user-line",
-    },
-    {
-      name: "Bookings",
-      path: "/admin/bookings",
-      icon: "ri-file-list-line",
-    },
-    {
-      name: "Logout",
-      path: "/logout",
-      icon: "ri-logout-box-line",
-    },
+    { name: "Home", path: "/easy-booking", icon: "ri-home-line" },
+    { name: "Buses", path: "/admin/buses", icon: "ri-bus-line" },
+    { name: "Users", path: "/admin/users", icon: "ri-user-line" },
+    { name: "Bookings", path: "/admin/bookings", icon: "ri-file-list-line" },
+    { name: "Logout", path: "/logout", icon: "ri-logout-box-line" },
   ];
-  const menutoBeRendered = user?.isAdmin ? adminMenu : userMenu;
+  const menu = user?.isAdmin ? adminMenu : userMenu;
   let activeRoute = window.location.pathname;
-  if (window.location.pathname.includes("book-now")) {
-    activeRoute = "/easy-booking";
-  }
+  if (window.location.pathname.includes("book-now")) activeRoute = "/easy-booking";
+
+  const handleNav = (path) => {
+    if (path === "/logout") {
+      localStorage.clear();
+      navigate("/");
+    } else {
+      navigate(path);
+    }
+    setSidebarOpen(false);
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setSidebarOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const SidebarContent = () => (
+    <nav className="flex flex-col gap-1 px-3 py-4">
+      {menu.map((item, key) => (
+        <div
+          key={key}
+          onClick={() => handleNav(item.path)}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${
+            activeRoute === item.path
+              ? "bg-primary-600 text-white"
+              : "text-slate-300 hover:bg-slate-700 hover:text-white"
+          }`}
+        >
+          <i className={`${item.icon} text-xl shrink-0`}></i>
+          {(!collapsed || sidebarOpen) && (
+            <span className="font-medium">{item.name}</span>
+          )}
+        </div>
+      ))}
+    </nav>
+  );
 
   return (
-    <div className="flex w-full">
-      <div className="h-screen sticky top-0 flex flex-col bg-gray-800 shadow justify-start px-5 py-0 ">
-        <div className="flex flex-col justify-start items-center p-5">
-          <div className="bg-gray-800 w-full ">
-            {collapsed ? (
-              <i
-                className="ri-menu-2-fill cursor-pointer text-[30px] text-white"
-                onClick={() => {
-                  setCollapsed(false);
-                }}
-              ></i>
-            ) : (
-              <i
-                className="ri-close-line cursor-pointer text-[30px] text-white"
-                onClick={() => {
-                  setCollapsed(true);
-                }}
-              ></i>
-            )}
-          </div>
+    <div className="flex w-full min-h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      <aside
+        className={`hidden lg:flex flex-col bg-slate-800 border-r border-slate-700 transition-all duration-300 ${
+          collapsed ? "w-20" : "w-56"
+        }`}
+      >
+        <div className="p-4 flex justify-between items-center shrink-0">
+          {!collapsed && (
+            <img src={logo} alt="Logo" className="h-10 w-10 rounded-xl object-cover" />
+          )}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-2 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-white transition-colors"
+          >
+            <i className={`ri-${collapsed ? "menu-2" : "close"}-line text-xl`}></i>
+          </button>
         </div>
-
-        <div className="flex flex-col gap-5 justify-start mt-[100px] ">
-          {menutoBeRendered.map((item, key) => {
-            return (
-              <div
-                key={key}
-                className={`${
-                  activeRoute === item.path && "bg-blue-900 btn-disabled"
-                } gap-2 relative inline-flex items-center justify-start px-10 py-3 overflow-hidden font-bold rounded-full group`}
-              >
-                <i
-                  className={`${item.icon} w-32 h-32 rotate-45 translate-x-12 -translate-y-2 absolute left-0 top-0 bg-black opacity-[3%]`}
-                ></i>
-                <i
-                  className={`${item.icon} text-white text-[20px] group-hover:text-black`}
-                ></i>
-
-                {!collapsed && (
-                  <span
-                    onClick={() => {
-                      if (item.path === "/logout") {
-                        localStorage.clear();
-                        navigate("/");
-                      } else {
-                        navigate(item.path);
-                      }
-                    }}
-                  >
-                    <span className="w-32 h-32 rotate-45 translate-x-12 -translate-y-2 absolute left-0 top-0 bg-white opacity-[3%]"></span>
-                    <span className="absolute top-0 left-0 w-48 h-48 -mt-1 transition-all duration-500 ease-in-out rotate-45 -translate-x-56 -translate-y-24 bg-white opacity-100 group-hover:translate-x-0"></span>
-                    <span className="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-black">
-                      {item.name}
-                    </span>
-                    <span className="absolute inset-0 border-2 border-blue-600 rounded-full"></span>
-                  </span>
-                )}
-              </div>
-            );
-          })}
+        <div className="flex-1 overflow-y-auto">
+          <SidebarContent />
         </div>
-      </div>
-      <div className="w-full">
-        <div className="bg-gray-800 flex flex-col justify-start items-center py-2">
+      </aside>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar Drawer */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-slate-800 z-50 transform transition-transform duration-300 lg:hidden ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="p-4 flex justify-between items-center border-b border-slate-700">
+          <img src={logo} alt="Logo" className="h-10 w-10 rounded-xl object-cover" />
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="p-2 rounded-lg text-slate-400 hover:bg-slate-700"
+          >
+            <i className="ri-close-line text-xl"></i>
+          </button>
+        </div>
+        <SidebarContent />
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-4 shrink-0">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 shrink-0"
+          >
+            <i className="ri-menu-line text-2xl text-gray-600"></i>
+          </button>
           <img
             onClick={() => navigate("/")}
             src={logo}
-            alt="logo"
-            className="w-30 h-20 rounded-full cursor-pointer"
+            alt="Ticket Bus"
+            className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl cursor-pointer object-cover hover:opacity-90 transition-opacity shrink-0"
           />
-          <h1 className="text-white text-base mb-0 p-0 text-center ">
-            <div className="mt-1">{user?.name} </div>
-            <div className="mt-1">{user?.email}</div>
-          </h1>
-        </div>
-        <div className="p-[10px] px-0">{children}</div>
+          <div className="flex-1 min-w-0" />
+          <div className="text-right min-w-0 shrink-0">
+            <p className="font-semibold text-gray-800 truncate text-sm sm:text-base">
+              {user?.name}
+            </p>
+            <p className="text-gray-500 text-xs sm:text-sm truncate">{user?.email}</p>
+          </div>
+        </header>
+        <main className="flex-1 p-4 sm:p-6 bg-gray-50 overflow-auto min-h-0">
+          {children}
+        </main>
       </div>
     </div>
   );

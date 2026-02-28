@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
 import BusForm from "../../components/BusForm";
-import PageTitle from "../../components/PageTitle";
 import { HideLoading, ShowLoading } from "../../redux/alertsSlice";
 import { useDispatch } from "react-redux";
 import { axiosInstance } from "../../helpers/axiosInstance";
@@ -29,10 +28,10 @@ function AdminBuses() {
     }
   }, [dispatch]);
 
-  const deleteBus = async (_id) => {
+  const deleteBus = async (id) => {
     try {
       dispatch(ShowLoading());
-      const response = await axiosInstance.delete(`/api/buses/${_id}`, {});
+      const response = await axiosInstance.delete(`/api/buses/${id}`, {});
 
       dispatch(HideLoading());
       if (response.data.success) {
@@ -49,56 +48,96 @@ function AdminBuses() {
 
   const columns = [
     {
-      title: "Name",
+      title: "Nama Bus",
       dataIndex: "name",
+      key: "name",
+      render: (name) => <span className="font-medium text-gray-800">{name}</span>,
     },
     {
-      title: "Bus Number",
+      title: "No. Bus",
       dataIndex: "busNumber",
+      key: "busNumber",
+      width: 90,
     },
     {
-      title: "From",
-      dataIndex: "from",
+      title: "Rute",
+      key: "route",
+      render: (_, record) => (
+        <span className="text-gray-600">
+          {record.from} → {record.to}
+        </span>
+      ),
     },
     {
-      title: "To",
-      dataIndex: "to",
-    },
-    {
-      title: "Journey Date",
+      title: "Tanggal",
       dataIndex: "journeyDate",
+      key: "journeyDate",
+      width: 120,
     },
-
+    {
+      title: "Harga",
+      dataIndex: "price",
+      key: "price",
+      width: 100,
+      render: (price) => (
+        <span className="font-medium text-primary-600">
+          Rp {Number(price).toLocaleString("id-ID")}
+        </span>
+      ),
+    },
     {
       title: "Status",
       dataIndex: "status",
+      key: "status",
+      width: 120,
       render: (status) => {
-        if (status === "Completed") {
-          return <span className="text-red-500">{status}</span>;
-        } else if (status === "running") {
-          return <span className="text-yellow-500">{status}</span>;
-        } else {
-          return <span className="text-green-500">{status}</span>;
+        const s = status || "";
+        if (s === "Completed") {
+          return (
+            <span className="inline-flex px-2 py-1 rounded-lg text-xs font-medium bg-red-100 text-red-700">
+              Selesai
+            </span>
+          );
         }
+        if (s.toLowerCase() === "running") {
+          return (
+            <span className="inline-flex px-2 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-700">
+              Berjalan
+            </span>
+          );
+        }
+        return (
+          <span className="inline-flex px-2 py-1 rounded-lg text-xs font-medium bg-green-100 text-green-700">
+            Belum Berangkat
+          </span>
+        );
       },
     },
     {
-      title: "Action",
-      dataIndex: "action",
-      render: (actions, record) => (
-        <div className="flex gap-3">
-          <i
-            className="ri-delete-bin-line cursor-pointer text-red-500 text-xl"
-            onClick={() => deleteBus(record._id)}
-          ></i>
-
-          <i
-            className="ri-pencil-line cursor-pointer text-xl"
+      title: "Aksi",
+      key: "action",
+      width: 100,
+      render: (_, record) => (
+        <div className="flex gap-2">
+          <button
+            type="button"
             onClick={() => {
               setSelectedBus(record);
               setShowBusForm(true);
             }}
-          ></i>
+            className="p-2 rounded-lg text-primary-600 hover:bg-primary-50 transition-colors"
+            title="Edit"
+          >
+            <i className="ri-pencil-line text-lg"></i>
+          </button>
+          <button
+            type="button"
+            onClick={() => deleteBus(record.id)}
+            className="p-2 rounded-lg text-red-500 hover:bg-red-50 transition-colors"
+            title="Hapus"
+          >
+            <i className="ri-delete-bin-line text-lg"></i>
+          </button>
         </div>
       ),
     },
@@ -111,43 +150,57 @@ function AdminBuses() {
   return (
     <>
       <Helmet>
-        <title>Buses</title>
+        <title>Kelola Bus - Admin</title>
       </Helmet>
-      <div>
-        <div className="flex justify-between p-7">
-          <PageTitle title="Buses" />
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Kelola Bus</h1>
+            <p className="text-gray-500 text-xs sm:text-sm mt-1">
+              Tambah, edit, atau hapus data bus
+            </p>
+          </div>
           <button
-            type="submit"
-            className="relative inline-flex items-center justify-start
-                px-10 py-3 overflow-hidden font-bold rounded-full
-                group"
-            onClick={() => setShowBusForm(true)}
+            type="button"
+            className="btn-primary-custom flex items-center gap-2 w-fit"
+            onClick={() => {
+              setSelectedBus(null);
+              setShowBusForm(true);
+            }}
           >
-            <span className="w-32 h-32 rotate-45 translate-x-12 -translate-y-2 absolute left-0 top-0 bg-white opacity-[3%]"></span>
-            <span className="absolute top-0 left-0 w-48 h-48 -mt-1 transition-all duration-500 ease-in-out rotate-45 -translate-x-56 -translate-y-24 bg-blue-600 opacity-100 group-hover:-translate-x-8"></span>
-            <span className="relative w-full text-left text-black transition-colors duration-200 ease-in-out group-hover:text-white">
-              Add Bus
-            </span>
-            <span className="absolute inset-0 border-2 border-blue-600 rounded-full"></span>
+            <i className="ri-add-line text-lg"></i>
+            Tambah Bus
           </button>
         </div>
-        <div className="p-7">
-          <Table
-            columns={columns}
-            dataSource={buses}
-            pagination={{ pageSize: 7 }}
-          />
-          {showBusForm && (
-            <BusForm
-              showBusForm={showBusForm}
-              setShowBusForm={setShowBusForm}
-              type={selectedBus ? "edit" : "add"}
-              selectedBus={selectedBus}
-              setSelectedBus={setSelectedBus}
-              getData={getBuses}
+
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-card border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table
+              columns={columns}
+              dataSource={buses}
+              rowKey="id"
+              scroll={{ x: 700 }}
+              pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} bus`,
+              locale: { items_per_page: " / halaman" },
+            }}
+              locale={{ emptyText: "Belum ada data bus. Klik Tambah Bus untuk mulai." }}
             />
-          )}
+          </div>
         </div>
+
+        {showBusForm && (
+          <BusForm
+            showBusForm={showBusForm}
+            setShowBusForm={setShowBusForm}
+            type={selectedBus ? "edit" : "add"}
+            selectedBus={selectedBus}
+            setSelectedBus={setSelectedBus}
+            getData={getBuses}
+          />
+        )}
       </div>
     </>
   );

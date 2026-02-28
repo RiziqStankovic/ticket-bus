@@ -1,10 +1,18 @@
-const User = require("../models/usersModel");
-
-// get user by id
+const { prisma } = require("../config/dbConfig");
 
 const GetUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
+    const user = await prisma.user.findUnique({
+      where: { id: req.params.userId },
+      select: { id: true, name: true, email: true, isAdmin: true },
+    });
+    if (!user) {
+      return res.send({
+        message: "User not found",
+        success: false,
+        data: null,
+      });
+    }
     res.send({
       message: "User fetched successfully",
       success: true,
@@ -19,11 +27,12 @@ const GetUserById = async (req, res) => {
   }
 };
 
-// get all users
 const getAllClients = async (req, res) => {
   try {
-    // if the user is an admin, dont display him in the list of users
-    const users = await User.find({ isAdmin: true });
+    const users = await prisma.user.findMany({
+      where: { isAdmin: false },
+      select: { id: true, name: true, email: true, isAdmin: true },
+    });
     res.send({
       message: "Users fetched successfully",
       success: true,

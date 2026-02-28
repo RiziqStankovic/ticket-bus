@@ -24,7 +24,7 @@ function AdminBookings() {
           return {
             ...booking,
             ...booking.bus,
-            key: booking._id,
+            key: booking.id,
           };
         });
         setBookings(mappedData);

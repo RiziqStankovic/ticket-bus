@@ -92,14 +92,7 @@ function App() {
               }
             />
 
-            <Route
-              path="/book-now/:id"
-              element={
-                <ProtectedRoute>
-                  <BookNow />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/book-now/:id" element={<BookNow />} />
 
             <Route
               path="/admin/bookings"
