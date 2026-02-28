@@ -12,6 +12,10 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
+app.get("/", (req, res) => {
+  res.json({ message: "Ticket Bus API", status: "running" });
+});
+
 app.use("/api/users", require("./routes/usersRoutes"));
 app.use("/api/buses", require("./routes/busesRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
