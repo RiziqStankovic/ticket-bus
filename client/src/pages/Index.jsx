@@ -1,4 +1,3 @@
-import logo from "../assets/img/logo.png";
 import { Helmet } from "react-helmet";
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
@@ -59,7 +58,7 @@ function Index() {
 
   useEffect(() => {
     fetchBuses();
-  }, []);
+  }, [fetchBuses]);
 
   const hasSearched = filters.from && filters.to && filters.journeyDate;
   const showBuses = buses.length > 0;
