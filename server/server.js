@@ -22,7 +22,12 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/bookings", require("./routes/bookingsRoutes"));
 app.use("/api/cities", require("./routes/citiesRoutes"));
 
-// listen to port
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// Export untuk Vercel serverless
+module.exports = app;
+
+// Listen untuk development lokal
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
